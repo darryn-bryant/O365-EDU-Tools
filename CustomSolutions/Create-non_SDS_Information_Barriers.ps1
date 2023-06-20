@@ -419,7 +419,17 @@ function Add-AllIPPSObjects($ippsObjectType, $aadObjectType, $csvFilePath)
             {
                 $scriptBlock = $NewOrgSegmentsJob
                 $createdObjs = Get-OrganizationSegment
-                $aadObjects = $csvData | Where-Object { "AdministrativeUnits -eq '$($_.ObjectId)'" -notin $createdObjs.UserGroupFilter }
+                switch ($aadObjectType)
+                {
+                    $aadObjAU
+                    {
+                        $aadObjects = $csvData | Where-Object { "AdministrativeUnits -eq '$($_.ObjectId)'" -notin $createdObjs.UserGroupFilter }
+                    }
+                    $aadObjSG
+                    {
+                        $aadObjects = $csvData | Where-Object { "MemberOf -eq '$($_.ObjectId)'" -notin $createdObjs.UserGroupFilter }
+                    }
+                }
             }
             $ippsObjIB
             {
@@ -623,7 +633,7 @@ if ( $csvFilePathSG -ne "" ) {
 
         if ($all -or $sgIB)
         {
-            Add-AllIPPSObjects $ippsObjIB $csvFilePathSG
+            Add-AllIPPSObjects $ippsObjIB $aadObjSG $csvFilePathSG
         }
         else
         {
@@ -652,4 +662,6 @@ if ($choiceStartIB -ieq "y" -or $choiceStartIB -ieq "yes") {
     Write-Output "Done.  Please allow ~30 minutes for the system to start the process of applying Information Barrier Policies. `nUse Get-InformationBarrierPoliciesApplicationStatus to check the status"
 }
 
-Write-Output "`n`nDone.  Please run 'Disconnect-Graph' and 'Disconnect-ExchangeOnline' if you are finished`n"
+Write-Output "`n`nDone.  Logs can be reviewed at $outFolder`n"
+
+Write-OutPut "Please run 'Disconnect-Graph' and 'Disconnect-ExchangeOnline' if you are finished`n"
